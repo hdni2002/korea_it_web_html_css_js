@@ -46,21 +46,54 @@ console.log(json4);
 console.log(json3 === json4);
 
 // 배열의 다양한 기본 내장 함수
-const names = ["허일녕","허이녕","허삼녕"];
+const names = ["허일녕", "허이녕", "허삼녕"];
 names.push("허일녕");
 console.log(names);
 
-//const가 재할당을 금지하는 것이지, 
+//const가 재할당을 금지하는 것이지,
 //참조하는 객체(배열)의 내용 변경까지 막는것은 아니다 .
 
 // 요소 제거 : pop() => 배열의 마지막 요소를 제거하고, 제거된 요소를 반환
 console.log(names.pop());
 
 //요소 수정/삽입/제거: splice(삽입될 인덱스, 제거할 개수, 추가할 요소...)
-names.splice(1,0,"허오녕");
-console.log(names)
+names.splice(1, 0, "허오녕");
+console.log(names);
 
-// 요소 찾기 : find() => 주어진 테스트 함수를 만족하는 배열의 첫 번째 요소를 반환 
-const findfx = (n) => n === "허일녕"; 
+// 요소 찾기 : find() => 주어진 테스트 함수를 만족하는 배열의 첫 번째 요소를 반환
+const findfx = (n) => n === "허일녕";
 const foundName = names.find(findfx);
 console.log(foundName);
+
+const students = [
+  //객체로 이루어진 배열
+  { name: "허일녕", age: 24 },
+  { name: "허이녕", age: 25 },
+  { name: "허삼녕", age: 24 },
+  { name: "허사녕", age: 24 },
+  { name: "허사녕", age: 25 },
+];
+console.log(students.find((s) => s.name === "허삼녕"));
+// 값 존재 여부 : includes() - 배열에 특정 값이 포함되어있는지 boolean으로 반환
+console.log(names.includes("허일녕"));
+//names에 해당 값이 포함되어 있으면 true
+//필터링 : filter() - 주어진 조건 함수를 통과하는 모든 요소로 새로운 배열을 만듭니다.
+//원본 배열은 영향을 주지 않음
+const numbers = [1, 2, 3, 4, 5];
+console.log(numbers.filter((n) => n % 2 === 0));
+const even = numbers.filter((n) => n % 2 === 0);
+console.log(students.filter((student) => student.age === 24));
+// students.stream().filter(student -> student.getAge == 24).collect(Collector.toList())
+
+//map() - 배열의 모든 요소에 대해 주어진 함수를 호출(적용)한 결과를 모아 새로운 배열을 반환
+console.log(numbers.map((n) => n * 10));
+console.log(students.map((student) => {
+    if(student.age === 25){
+        //나이가 25인 학생은 이름만 있는 새로운 객체를 반환
+        return {
+            name : student.name,
+        };
+    }
+    return student;
+})
+);
