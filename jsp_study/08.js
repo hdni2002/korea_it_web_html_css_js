@@ -138,8 +138,8 @@ const productNamesAndPrices = products.map((product) => ({
 // 3.
 console.log(productNamesAndPrices);
 const discountProducts = products
-.filter((product) => product.category === "전자제품")
-.map((product) => ({
+  .filter((product) => product.category === "전자제품")
+  .map((product) => ({
     name: product.name,
     price: product.price * 0.9,
   }));
@@ -179,3 +179,28 @@ console.log(discountProducts);
 //       return student;
 //     })
 //   );
+const baseConfig = {
+  theme: "dark",
+  fontSize: "16px",
+  language: "ko",
+};
+const newConfig = {
+  ...baseConfig,
+  theme: "light",
+  padding: "20px",
+};
+
+console.log(newConfig);
+
+// newConfig를 만드세요.
+// theme는 "light"로 변경하고,
+// padding: "20px" 속성을 새로 추가하세요.
+
+// 객체 Spread 문법을 사용하여 newConfig 생성
+//==================================================
+const arr1 = [1, 2, 3];
+const arr2 = [4, 5];
+
+const arr3 = [...arr1, ...arr2];
+console.log(arr3);
+// 배열 Spread 문법을 사용하여 배열 합치기
