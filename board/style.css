@@ -57,7 +57,8 @@ form {
   width: 400px;
 }
 
-input,textarea {
+input,
+textarea {
   padding: 10px;
   border: 1px solid #dddddd;
   border-radius: 5px;
@@ -67,7 +68,6 @@ input,textarea {
 textarea {
   height: 150px;
   resize: none;
-
 }
 
 .btn-submit {
@@ -103,4 +103,18 @@ textarea {
 
 #board-list > li:hover {
   background-color: #f9f9f9;
+}
+
+#back-btn {
+  border: none;
+  padding: 8px 12px;
+  margin-top: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #0072ff;
+  color: white;
+}
+#back-btn:hover {
+  background-color: #007bff;
 }
