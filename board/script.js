@@ -3,8 +3,11 @@ const API_BASE_URL = "http://localhost:8080";
 //메뉴
 const navSignin = document.querySelector("#nav-signin");
 const navSignup = document.querySelector("#nav-signup");
+const navLogout = document.querySelector("#nav-logout");
 const navBoard = document.querySelector("#nav-board");
 const navWrite = document.querySelector("#nav-write");
+const navChangePassword = document.querySelector("#nav-changepassword");
+// console.dir(navSignin);
 
 //페이지
 const pageSignin = document.querySelector("#page-signin");
@@ -12,21 +15,29 @@ const pageSignup = document.querySelector("#page-signup");
 const pageBoard = document.querySelector("#page-board");
 const pageWrite = document.querySelector("#page-write");
 const pageDetail = document.querySelector("#page-detail");
+const pageChangePassword = document.querySelector("#page-changepassword");
+
 //로그인 및 회원가입 폼
 const signupForm = document.querySelector("#signup-form");
 const signinForm = document.querySelector("#signin-form");
+const changepasswordForm = document.querySelector("#changepassword-form");
 
 //게시판 목록
 const boardList = document.querySelector("#board-list");
 
-// 게시물 추가
+//게시물 추가
 const writeForm = document.querySelector("#write-form");
 
-// 게시물 상세
+//게시물 상세
 const detailTitle = document.querySelector("#detail-title");
-const detailUserId = document.querySelector("#detail-userId");
+const detailUserId = document.querySelector("#detail-userid");
 const detailContent = document.querySelector("#detail-content");
 const backBtn = document.querySelector("#back-btn");
+
+// 비밀번호 변경 취소버튼
+const cancelChangePasswordBtn = document.querySelector(
+  "#cancel-changepassword"
+);
 
 let boards = [];
 
@@ -38,18 +49,19 @@ function getPayload() {
     changePages(pageSignin);
     return null;
   }
+
   try {
-    // 토큰을 . 기준으로 분리해서 payload를 가져온다
+    //토큰을 . 기준으로 분리해서 payload를 가져온다
     const payloadBase64 = token.split(".")[1];
-    // 디코딩
-    const decodePayload = atob(payloadBase64);
-    // 디코딩된 JSON 문자열을 자바스크립트 객체로 변환
-    const payload = JSON.parse(decodePayload);
+    //디코딩
+    const decodedPayload = atob(payloadBase64);
+    //디코딩된 JSON 문자열을 자바스크립트 객체로 변환
+    const payload = JSON.parse(decodedPayload);
 
     return payload;
   } catch (error) {
     console.log(error);
-    alert("토큰오류발생");
+    alert("토큰 오류 발생");
   }
 }
 
@@ -93,7 +105,8 @@ async function renderBoard() {
     } else {
       //요청해서 받아온 게시물들 foreach => ul안에 li로 넣기
       boards = responseData.data;
-      boardList.innerHTML = ""; //이렇게 해야 게시판 클릭햇을때 중복으로 안쌓임
+      boardList.innerHTML = "";
+
       boards.forEach((board) => {
         const listItem = document.createElement("li");
         listItem.innerText = board.title;
@@ -113,14 +126,16 @@ async function renderBoard() {
   }
 }
 
-// 게시물 단건 조회 요청 함수
+//게시물 단건 조회 요청 함수
 async function getBoard(boardId) {
   const accessToken = localStorage.getItem("AccessToken");
+
   if (!accessToken) {
-    alert("게시물을 조회하려면 로그인이 필요합니다.");
+    alert("게시물을 조하려면 로그인이 필요합니다.");
     changePages(pageSignin);
     return;
   }
+
   try {
     const response = await fetch(`${API_BASE_URL}/board/${boardId}`, {
       method: "GET",
@@ -128,25 +143,23 @@ async function getBoard(boardId) {
         Authorization: `Bearer ${accessToken}`,
       },
     });
+
     const responseData = await response.json();
 
     if (responseData.status === "success") {
       detailTitle.innerText = responseData.data.title;
-      detailUserId.innerText = responseData.data.userId;
+      detailUserId.innerText = `유저 ID : ${responseData.data.userId}`;
       detailContent.innerText = responseData.data.content;
       changePages(pageDetail);
     }
-  } catch (error) {
-    console.log(error);
-    alert("게시글 상세 조회 중 오류가 발생했습니다.");
-  }
+  } catch (error) {}
 }
 
 //게시물 추가 요청 함수
 async function addBoard(event) {
   event.preventDefault();
 
-  //요청 보내기전 필요한 데이터 가져오기
+  //요청 보내기전 필요한 데이터 가져오
   const userInfo = await getPayload();
 
   const titleInput = document.querySelector("#write-title");
@@ -154,28 +167,29 @@ async function addBoard(event) {
 
   const accessToken = localStorage.getItem("AccessToken");
 
-  // 혹시모를 accessToken이 없는경우
-  // 요청에는 accessToken이 필요하니까 (유효성 검사.)
+  //혹시 모를 accessToken이 없는 경우 (유효성 검사)
+  //요청에는 accessToken이 필요하니까
   if (!accessToken) {
-    alert("글 작성하려면 로그인이 필요합니다.");
+    alert("글을 작성하려면 로그인이 필요합니다.");
     changePages(pageSignin);
     return;
   }
 
-  // 항목에 빈값을 입력하거나 공백을 입력했을경우 (유효성 검사).
+  //항목에 빈값을 입력하거나 공백을 입력했을 경우 (유효성 검사)
   if (!titleInput.value.trim() || !contentInput.value.trim()) {
-    alert("제목과 내용을 입력해주세요");
+    alert("모든 항목을 입력해주세요.");
     return;
   }
 
-  // 요청을 위한 body 데이터 객체 만들기 (포장)
+  //요청을 위한 body 데이터 객체 만들기 (포장)
   const boardData = {
     title: titleInput.value,
     content: contentInput.value,
     userId: userInfo.jti,
   };
+
   try {
-    // 요청보내기
+    //요청 보내기
     const response = await fetch(`${API_BASE_URL}/board/add`, {
       method: "POST",
       headers: {
@@ -186,6 +200,7 @@ async function addBoard(event) {
     });
 
     const responseData = await response.json();
+
     if (responseData.status !== "success") {
       alert(responseData.message);
     } else {
@@ -235,11 +250,7 @@ async function signinHandler(event) {
       localStorage.setItem("AccessToken", responseData.data);
       signinForm.reset();
 
-      //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-      //+++++++++++++++++++++++게시판 목록으로 전환+++++++++++++++++++++++++++++
-      //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-      await renderBoard();
-      changePages(pageBoard);
+      location.reload();
     }
   } catch (error) {
     console.log(error);
@@ -299,6 +310,14 @@ navSignin.addEventListener("click", () => {
 navSignup.addEventListener("click", () => {
   changePages(pageSignup);
 });
+navLogout.addEventListener("click", () => {
+  if (confirm("정말 로그아웃 하시겠습니까?")) {
+    localStorage.removeItem("AccessToken");
+    location.reload(true);
+  } else {
+    return;
+  }
+});
 navBoard.addEventListener("click", renderBoard);
 navWrite.addEventListener("click", () => {
   changePages(pageWrite);
@@ -309,3 +328,95 @@ backBtn.addEventListener("click", renderBoard);
 signupForm.addEventListener("submit", signupHandler);
 signinForm.addEventListener("submit", signinHandler);
 writeForm.addEventListener("submit", addBoard);
+
+//HTML 문서가 완전히 로드되고 파싱되었을때
+document.addEventListener("DOMContentLoaded", async () => {
+  const accessToken = localStorage.getItem("AccessToken");
+
+  if (accessToken) {
+    navSignin.style.display = "none";
+    navSignup.style.display = "none";
+    await renderBoard();
+  } else {
+    navLogout.style.display = "none";
+    navChangePassword.style.display = "none";
+    changePages(pageSignin);
+  }
+});
+
+navChangePassword.addEventListener("click", () => {
+  changePages(pageChangePassword);
+});
+
+async function changepasswordHandler(event) {
+  event.preventDefault();
+  const userInfo = await getPayload();
+  const oldPasswordInput = document.querySelector("#old-password");
+  const newPasswordInput = document.querySelector("#new-password");
+  const confirmPasswordInput = document.querySelector("#confirm-new-password");
+
+  const accessToken = localStorage.getItem("AccessToken");
+  if (!accessToken) {
+    alert("로그인 후 사용해주세요");
+    changePages(pageSignin);
+    return;
+  }
+
+  if (newPasswordInput.value !== confirmPasswordInput.value) {
+    alert("새 비밀번호가 일치하지 않습니다.");
+    return;
+  }
+
+  if (
+    !oldPasswordInput.value ||
+    !newPasswordInput.value ||
+    !confirmPasswordInput.value
+  ) {
+    alert("빈칸을 모두 입력해주세요");
+    return;
+  }
+
+  const changepasswordData = {
+    userId: userInfo.jti,
+    oldPassword: oldPasswordInput.value,
+    newPassword: newPasswordInput.value,
+  };
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/account/change/password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(changepasswordData),
+    });
+    const responseData = await response.json();
+
+    if (responseData.status !== "success") {
+      alert(responseData.message);
+      return;
+    }
+
+    if (responseData.status === "success") {
+      alert("비밀번호가 변경되었습니다. 다시 로그인 해주세요.");
+      localStorage.removeItem("AccessToken");
+      location.reload();
+    } else {
+      alert(responseData.message);
+    }
+  } catch (error) {
+    console.log(error);
+    alert("비밀번호 변경 중 오류가 발생했습니다.");
+  }
+}
+changepasswordForm.addEventListener("submit", changepasswordHandler);
+cancelChangePasswordBtn.addEventListener("click", () => {
+  changePages(pageBoard); // 혹은 원하는 페이지
+});
+// 비밀번호 변경
+// 메뉴 버튼 만들고 액세스 토큰에 따라서 보이고 안보이고 처리
+// 요청 보낼때 userId, oldPassword, newPassword body로 요청 보내기
+// accesstoken 도 헤더에 포함해서
+// 새로운 비밀번호 입력은 두번 받아서 두개의 값이 같은지 확인 후 요청 처리
+// 비밀번호가 변경되면 로그아웃 처리하고 로그인 페이지로 전환

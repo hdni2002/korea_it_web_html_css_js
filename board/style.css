@@ -105,16 +105,59 @@ textarea {
   background-color: #f9f9f9;
 }
 
-#back-btn {
+
+
+#page-detail {
+ 
+  text-align: left;
+}
+
+#page-detail > h2 ,
+p{
+  width: 100%;
+  padding-left: 10px;
+}
+
+
+#detail-userId {
+  margin: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #dbdbdb;
+  box-sizing: border-box;
+
+}
+#detail-content{
+  min-height: 500px;
+  border-bottom: 1px solid #dbdbdb;
+  max-width: 800px;
+  padding-bottom: 20px;
+}
+
+
+ #back-btn {
   border: none;
-  padding: 8px 12px;
-  margin-top: 20px;
+  padding: 8px 13px;
+  font-size: 1em;
+  align-self: flex-start;
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.3s ease;
-  background-color: #0072ff;
-  color: white;
+
 }
 #back-btn:hover {
+  background-color: #e2e6e2;
+} 
+
+#change-btn {
+  text-align: center;
+  box-sizing: border-box;
+  align-items: center;
+  padding: 6px 10px; 
+  font-size: 12px;   
+  width: 100px;       
+  height: 30px;     
+  border: none;
+  border-radius: 5px;
   background-color: #007bff;
+  cursor: pointer;
 }
