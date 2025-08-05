@@ -16,11 +16,13 @@ const pagePassword = document.querySelector("#page-password");
 const pageBoard = document.querySelector("#page-board");
 const pageWrite = document.querySelector("#page-write");
 const pageDetail = document.querySelector("#page-detail");
+const pageUpdate = document.querySelector("#page-update");
 
 //로그인 및 회원가입 폼
 const signupForm = document.querySelector("#signup-form");
 const signinForm = document.querySelector("#signin-form");
 const passwordForm = document.querySelector("#password-form");
+const updateForm = document.querySelector("#update-form");
 
 //게시판 목록
 const boardList = document.querySelector("#board-list");
@@ -33,9 +35,14 @@ const detailTitle = document.querySelector("#detail-title");
 const detailUserId = document.querySelector("#detail-userid");
 const detailContent = document.querySelector("#detail-content");
 const backBtn = document.querySelector("#back-btn");
+const updateBtn = document.querySelector("#update-btn");
 const deleteBtn = document.querySelector("#delete-btn");
 const btnBox = document.querySelector("#btn-box");
-const editBtn = document.querySelector("#edit-btn");
+const cancelBtn = document.querySelector("#cancel-btn");
+
+//게시물 수정
+const updateTitleInput = document.querySelector("#update-title");
+const updateContentInput = document.querySelector("#update-content");
 
 let boards = [];
 
@@ -154,6 +161,7 @@ async function getBoard(boardId) {
       detailUserId.innerText = `유저 ID : ${responseData.data.userId}`;
       detailContent.innerText = responseData.data.content;
       deleteBtn.setAttribute("data-board-id", responseData.data.boardId);
+      updateBtn.setAttribute("data-board-id", responseData.data.boardId);
 
       btnBox.classList.remove("active");
       if (responseData.data.userId == userId) {
@@ -164,6 +172,86 @@ async function getBoard(boardId) {
   } catch (error) {}
 }
 
+// 게시물 수정
+async function updateBoard() {
+  const accessToken = localStorage.getItem("AccessToken");
+
+  const boardId = updateBtn.dataset.boardId;
+
+  if (!accessToken) {
+    alert("게시물을 조회하려면 로그인이 필요합니다.");
+    changePages(pageSignin);
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/board/${boardId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const responseData = await response.json();
+
+    if (responseData.status === "success") {
+      updateTitleInput.value = responseData.data.title;
+      updateContentInput.value = responseData.data.content;
+      changePages(pageUpdate);
+    }
+  } catch (error) {}
+}
+
+async function update(event) {
+  event.preventDefault();
+
+  const accessToken = localStorage.getItem("AccessToken");
+
+  const boardId = updateBtn.dataset.boardId;
+
+  if (!accessToken) {
+    alert("게시물을 조회하려면 로그인이 필요합니다.");
+    changePages(pageSignin);
+    return;
+  }
+
+  const updateData = {
+    boardId: boardId,
+    title: updateTitleInput.value,
+    content: updateContentInput.value,
+  };
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/board/update`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updateData),
+    });
+
+    const responseData = await response.json();
+
+    if (responseData.status !== "success") {
+      alert(responseData.message);
+      await renderBoard();
+      changePages(pageBoard);
+    } else {
+      alert(responseData.message);
+      await renderBoard();
+      changePages(pageBoard);
+    }
+  } catch (error) {
+    alert("게시물 수정에 오류가 발생했습니다.");
+  }
+}
+
+cancelBtn.addEventListener("click", () => {
+  updateForm.reset();
+  changePages(pageBoard);
+});
+//
 async function removeBoard() {
   const boardId = deleteBtn.dataset.boardId;
 
@@ -197,22 +285,6 @@ async function removeBoard() {
     console.log(error);
     alert("삭제 요청을 보내는 중에 문제가 발생했습니다.");
   }
-}
-
-async function editBoard(event) {
-  event.preventDefault();
-
-  const userInfo = await getPayload();
-  const edittitleInput = document.querySelector("#edit-write-title");
-  const editcontentInput = document.querySelector("#edit-write-content");
-
-  const accessToken = localStorage.getItem("AccessToken");
-  
-  const editboardData = {
-    title: edittitleInput.value,
-    content: editcontentInput.value,
-    boardId: 
-  };
 }
 
 //게시물 추가 요청 함수
@@ -447,12 +519,14 @@ navWrite.addEventListener("click", () => {
 });
 
 backBtn.addEventListener("click", renderBoard);
+updateBtn.addEventListener("click", updateBoard);
 deleteBtn.addEventListener("click", removeBoard);
 
 signupForm.addEventListener("submit", signupHandler);
 signinForm.addEventListener("submit", signinHandler);
 writeForm.addEventListener("submit", addBoard);
 passwordForm.addEventListener("submit", changePassword);
+updateForm.addEventListener("submit", update);
 
 //HTML 문서가 완전히 로드되고 파싱되었을때
 document.addEventListener("DOMContentLoaded", async () => {
@@ -475,3 +549,69 @@ document.addEventListener("DOMContentLoaded", async () => {
 //accesstoken도 같이 헤더에 포함해서
 //새로운 비밀번호 입력은 두번 받아서 두개의 값이 같은지 확인 후 요청 처리
 //비밀번호가 변경되면 로그아웃 처리하고 로그인페이지로 전환
+
+
+
+//   const boardId = editForm.dataset.boardId;
+//   const edittitleInput = document.querySelector("#edit-write-title");
+//   const editcontentInput = document.querySelector("#edit-write-content");
+
+//   const accessToken = localStorage.getItem("AccessToken");
+
+//   const editboardData = {
+//     title: edittitleInput.value,
+//     content: editcontentInput.value,
+//     boardId: boardId,
+//   };
+//   try {
+//     const response = await fetch(`${API_BASE_URL}/board/update`, {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${accessToken}`,
+//       },
+//       body: JSON.stringify(editboardData),
+//     });
+//     const responseData = await response.json();
+//     if (responseData.status === "success") {
+//       alert("게시물이 수정되었습니다.");
+//       await renderBoard(); // 목록 새로고침
+//       changePages(pageBoard); // 게시판 페이지로 이동
+//     } else {
+//       alert(responseData.message);
+//     }
+//   } catch (error) {
+//     console.log(error);
+//     alert("게시물 수정 중 오류가 발생했습니다.");
+//   }
+// }
+
+// editBtn.addEventListener("click", async () => {
+//   const boardId = deleteBtn.dataset.boardId;
+//   const accessToken = localStorage.getItem("AccessToken");
+
+//   try {
+//     const response = await fetch(`${API_BASE_URL}/board/${boardId}`, {
+//       method: "GET",
+//       headers: {
+//         Authorization: `Bearer ${accessToken}`,
+//       },
+//     });
+
+//     const responseData = await response.json();
+
+//     if (responseData.status === "success") {
+//       document.querySelector("#edit-write-title").value =
+//         responseData.data.title;
+//       document.querySelector("#edit-write-content").value =
+//         responseData.data.content;
+
+//       editForm.dataset.boardId = boardId;
+
+//       changePages(pageEdit);
+//     }
+//   } catch (error) {
+//     console.log(error);
+//     alert("수정 페이지로 이동 중 오류가 발생했습니다.");
+//   }
+// });
